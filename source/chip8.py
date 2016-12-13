@@ -3,6 +3,8 @@ import random as r
 import ctypes
 
 class Chip8:
+    MAX_INT = 255
+    
     def __init__(self):
         self.V = [0]*16
         self.mem = [0] * 4096
@@ -25,24 +27,24 @@ class Emulator:
     def _1nnn(self, loc): # JP adrr
         self.chip.PC = loc 
 
-    def _2nnn(self, loc):# CALL adrr
+    def _2nnn(self, loc): # CALL adrr
         self.chip.SP +=1
         self.chip.stack[self.chip.sp] = self.chip.PC
         self.chip.PC = loc
 
-    def _3xkk(self, x, byte):# SE Vx, byte
+    def _3xkk(self, x, byte): # SE Vx, byte
         if self.chip.V[x] == byte:
             self.chip.PC += 1
 
-    def _4xkk(self, x, kk):# SNE Vx, byte
+    def _4xkk(self, x, kk): # SNE Vx, byte
         if self.chip.V[x] != kk:
             self.chip.PC += 1
 
-    def _5xy0(self, x, y):# SE Vx, Vy
+    def _5xy0(self, x, y): # SE Vx, Vy
         if self.chip.V[x] == self.chip.V[y]:
               self.chip.PC += 1
               
-	def _6xkk(self, x, byte): # LD Vx, byte
+    def _6xkk(self, x, byte): # LD Vx, byte
         self.chip.V[x] = byte
 
     def _7xkk(self, x, byte): # ADD Vx, byte
@@ -51,9 +53,25 @@ class Emulator:
     def _8xy0(self, x, y): # LD Vx, Vy
         self.chip.V[x] = self.chip.V[y]
 
-    def _8xy1(self, x, y):
+    def _8xy1(self, x, y): # OR Vx, Vy
         self.chip.V[x] |= self.chip.V[y]
 
-    def _8xy2(self, x, y):
+    def _8xy2(self, x, y): # AND Vx, Vy
         self.chip.V[x] &= self.chip.V[y]
+
+    def _8xy3(self, x, y):  # XOR Vx, Vy
+        self.chip.V[x] ^= self.chip.V[y]
+
+    def _8xy4(self, x, y): # SUB Vx, Vy (carry -> VF)
+        self.chip.V[x] += self.chip.V[y]
+
+        if self.chip.V[x] > self.chip.MAX_INT:
+            self.chip.V[15] = 1
+            self.chip.V[x] %= self.chip.MAX_INT
+            
+        else:
+            self.chip.V[15] = 0
+
+
+    
 
