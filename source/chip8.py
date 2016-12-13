@@ -1,6 +1,4 @@
-import pygame as pg
-import random as r
-import ctypes
+import random
 
 class Chip8:
     MAX_INT = 255
@@ -49,6 +47,7 @@ class Emulator:
 
     def _7xkk(self, x, byte): # ADD Vx, byte
         self.chip.V[x] += byte
+        self.chip.V{x] %= self.chip.MAX_INT
 
     def _8xy0(self, x, y): # LD Vx, Vy
         self.chip.V[x] = self.chip.V[y]
@@ -66,12 +65,40 @@ class Emulator:
         self.chip.V[x] += self.chip.V[y]
 
         if self.chip.V[x] > self.chip.MAX_INT:
-            self.chip.V[15] = 1
+            self.chip.V[0xF] = 1
             self.chip.V[x] %= self.chip.MAX_INT
             
         else:
-            self.chip.V[15] = 0
+            self.chip.V[0xF] = 0
 
+    def _8xy5(self, x, y): # SUB Vx, Vy (not borrow -> VF)
+        self.chip.V[0xF] = int(self.chip.V[x] > self.chip.V[y])
 
-    
+        """ Currently subtraction behaviour is implemented with wrapping. """
+        self.chip.V[x] -= self.chip.V[y]
+        self.chip.V[x] %= self.chip.MAX_INT
 
+    def _8xy6(self, x, y = None): # SHR Vx {, Vy}
+        # Get least significant bit of Vx
+        LSB = self.chip.V[x] % 2
+        
+        self.chip.V[x] //= 2
+        self.chip.V[0xF] = LSB
+
+    def _8xy7(self, x, y): #SUBN Vx, Vy (not borrow -> VF)
+        self.chip.V[0xF] = int(self.chip.V[y] > self.chip.V[x])
+
+        """ Currently subtraction behaviour is implemented with wrapping. """
+        self.chip.V[x] = (self.chip.V[x] - self.chip.V[y]) % self.chip.MAX_INT
+
+    def _8xyE(self, x, y = None): # SHL Vx {, Vy}
+        # Get least significant bit of Vx
+        LSB = self.chip.V[x] % 2
+        
+        self.chip.V[x] *= 2
+        self.chip.V[x] %= self.chip.MAX_INT
+        self.chip.V[0xf] = LSB
+
+    def _9xy0(self, x, y): # SNE Vx, Vy
+        if Vx != Vy:
+            self.chip.PC += 2
