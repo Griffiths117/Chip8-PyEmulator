@@ -1,4 +1,6 @@
 import pygame as pg
+import random as r
+import ctypes
 
 class Chip8:
     def __init__(self):
@@ -7,6 +9,7 @@ class Chip8:
         self.PC = 0
         self.SP = 0
         self.stack = [0] * 16
+        
 class Emulator:
     def __init__(self, chip, display):
         self.chip = chip
@@ -27,7 +30,7 @@ class Emulator:
         self.chip.stack[self.chip.sp] = self.chip.PC
         self.chip.PC = loc
 
-    def _3xkk(self, x, byte:# SE Vx, byte
+    def _3xkk(self, x, byte):# SE Vx, byte
         if self.chip.V[x] == byte:
             self.chip.PC += 1
 
@@ -39,13 +42,18 @@ class Emulator:
         if self.chip.V[x] == self.chip.V[y]:
               self.chip.PC += 1
               
-    def _6xkk(self, x, byte): # LD Vx, byte
+	def _6xkk(self, x, byte): # LD Vx, byte
         self.chip.V[x] = byte
 
-    def _7xkk(self, x, byte): #ADD Vx, byte
+    def _7xkk(self, x, byte): # ADD Vx, byte
         self.chip.V[x] += byte
 
-    def _8xy0(self, x, y):
+    def _8xy0(self, x, y): # LD Vx, Vy
         self.chip.V[x] = self.chip.V[y]
 
+    def _8xy1(self, x, y):
+        self.chip.V[x] |= self.chip.V[y]
+
+    def _8xy2(self, x, y):
+        self.chip.V[x] &= self.chip.V[y]
 
